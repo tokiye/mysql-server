@@ -7972,6 +7972,8 @@ handler *ha_innobase::clone(const char *name,   /*!< in: table name */
     assert(new_handler->m_prebuilt != nullptr);
 
     new_handler->m_prebuilt->select_lock_type = m_prebuilt->select_lock_type;
+    if(m_prebuilt->mrr_h_h2_impl)
+      new_handler->mrr_h_h2_impl = true;
   }
 
   return new_handler;
@@ -8705,6 +8707,12 @@ void ha_innobase::build_template(bool whole_row) {
     done in an UPDATE statement. */
 
     whole_row = true;
+    
+    if(m_prebuilt->mrr_h_h2_impl
+       && active_index != table->s->primary_key)
+      whole_row = false;
+
+
   } else if (!whole_row) {
     if (m_prebuilt->hint_need_to_fetch_extra_cols == ROW_RETRIEVE_ALL_COLS) {
       /* We know we must at least fetch all columns in the
@@ -23743,6 +23751,13 @@ int ha_innobase::multi_range_read_init(RANGE_SEQ_IF *seq, void *seq_init_param,
                                        HANDLER_BUFFER *buf) {
   m_ds_mrr.init(table);
 
+  if(!(mode & HA_MRR_USE_DEFAULT_IMPL)
+      && hint_key_state(table->in_use, table->pos_in_table_list, active_index,
+         MRR_HINT_ENUM, OPTIMIZER_SWITH_MRR))
+    m_prebuilt->mrr_h_h2_impl = true;
+  else
+    m_prebuilt->mrr_h_h2_impl = false;
+
   return (m_ds_mrr.dsmrr_init(seq, seq_init_param, n_ranges, mode, buf));
 }
 
@@ -23757,6 +23772,9 @@ ha_rows ha_innobase::multi_range_read_info_const(uint keyno, RANGE_SEQ_IF *seq,
                                                  Cost_estimate *cost) {
   /* See comments in ha_myisam::multi_range_read_info_const */
   m_ds_mrr.init(table);
+
+  if(table->in_use->lex->sql_command == SQLCOM_DELETE)
+    *flags &= ~HA_MRR_SORTED;
 
   return (m_ds_mrr.dsmrr_info_const(keyno, seq, seq_init_param, n_ranges, bufsz,
                                     flags, cost));
