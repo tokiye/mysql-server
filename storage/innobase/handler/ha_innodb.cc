@@ -23751,9 +23751,7 @@ int ha_innobase::multi_range_read_init(RANGE_SEQ_IF *seq, void *seq_init_param,
                                        HANDLER_BUFFER *buf) {
   m_ds_mrr.init(table);
 
-  if(!(mode & HA_MRR_USE_DEFAULT_IMPL)
-      && hint_key_state(table->in_use, table->pos_in_table_list, active_index,
-         MRR_HINT_ENUM, OPTIMIZER_SWITH_MRR))
+  if(!(mode & HA_MRR_USE_DEFAULT_IMPL))
     m_prebuilt->mrr_h_h2_impl = true;
   else
     m_prebuilt->mrr_h_h2_impl = false;
@@ -23772,9 +23770,6 @@ ha_rows ha_innobase::multi_range_read_info_const(uint keyno, RANGE_SEQ_IF *seq,
                                                  Cost_estimate *cost) {
   /* See comments in ha_myisam::multi_range_read_info_const */
   m_ds_mrr.init(table);
-
-  if(table->in_use->lex->sql_command == SQLCOM_DELETE)
-    *flags &= ~HA_MRR_SORTED;
 
   return (m_ds_mrr.dsmrr_info_const(keyno, seq, seq_init_param, n_ranges, bufsz,
                                     flags, cost));

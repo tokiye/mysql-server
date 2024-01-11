@@ -619,7 +619,7 @@ ha_rows check_quick_select(THD *thd, RANGE_OPT_PARAM *param, uint idx,
     *mrr_flags |= HA_MRR_INDEX_ONLY;
 
   if (thd->lex->sql_command != SQLCOM_SELECT)
-    *mrr_flags |= HA_MRR_SORTED;  // Assumed to give faster ins/upd/del
+    *mrr_flags &= ~HA_MRR_SORTED;  // Assumed to give faster ins/upd/del
 
   *bufsize = thd->variables.read_rnd_buff_size;
   // Sets is_ror_scan to false for some queries, e.g. multi-ranges
