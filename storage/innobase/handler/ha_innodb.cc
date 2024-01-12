@@ -7973,7 +7973,7 @@ handler *ha_innobase::clone(const char *name,   /*!< in: table name */
 
     new_handler->m_prebuilt->select_lock_type = m_prebuilt->select_lock_type;
     if(m_prebuilt->mrr_h_h2_impl)
-      new_handler->mrr_h_h2_impl = true;
+      new_handler->m_prebuilt->mrr_h_h2_impl = true;
   }
 
   return new_handler;
