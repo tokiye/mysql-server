@@ -788,7 +788,7 @@ struct row_prebuilt_t {
                          0 if and only if idx_cond == false. */
   /*----------------------*/
 
-  bool mrr_h_h2_impl;
+  bool mrr_h_h2_impl{false};
 
   unsigned innodb_api : 1;     /*!< whether this is a InnoDB API
                                query */
